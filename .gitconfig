@@ -1,0 +1,24 @@
+[user]
+  name = David Pierce
+  email = david.pierce@moz.com
+[core]
+  autocrlf = input
+  safecrlf = true
+  editor = vim
+[mailmap]
+  file = ~/.mailmap
+[alias]
+  co = checkout
+  ci = commit
+  st = status
+  br = branch
+  hist = log --pretty
+  hist = log --pretty=format:\"%h %ad | %s%d [%an]\" --graph --date=short
+  lg = log --color --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit
+  type = cat-file -t
+  dump = cat-file -p
+  gn = number
+  ga = number add
+	it = !git init && git commit -m “root” --allow-empty
+[url "git@gitlab.com:"]
+	insteadOf = https://gitlab.com/
