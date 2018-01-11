@@ -58,15 +58,15 @@ alias dc="docker-compose"
 alias db="docker build"
 
 # Activates NVM
-source ~/.nvm/nvm.sh
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
 
 # Default Vagrant VMWare Fusion settings
 export VAGRANT_DEFAULT_PROVIDER=vmware_fusion
 
 # Turns on SSH Agent for port forwarding
-ssh-add ~/.ssh/id_rsa
-ssh-add ~/.ssh/local-eng_rsa
-ssh-add ~/.ssh/meerkey.dat
+ssh-add ~/.ssh/id_rsa 1> /dev/null
+ssh-add ~/.ssh/local-eng_rsa 1> /dev/null
 
 # Vim Mode settings for ZSH
 # http://dougblack.io/words/zsh-vi-mode.html
@@ -94,23 +94,26 @@ bindkey '^w' backward-kill-word
 bindkey '^r' history-incremental-search-backward
 
 # Add Chef executables to path
-export PATH=$PATH:/Users/davidpierce/.chefdk/gem/ruby/2.1.0/bin
+export PATH=$PATH:~/.chefdk/gem/ruby/2.1.0/bin
 
 # OpenStack
-source ~/.openstack.conf
+[ -f ~/.openstack.conf ] && source ~/.openstack.conf
 
 # GOLANG
 # export PATH=$PATH:/usr/local/go/bin
-export PATH=/Users/davidpierce/go-install/go/bin:$PATH
-export GOPATH=/Users/davidpierce/Development/go
+export PATH=~/go-install/go/bin:$PATH
+export GOPATH=~/Development/go
 export PATH=$PATH:$GOPATH/bin
 
 # added by travis gem
-[ -f /Users/davidpierce/.travis/travis.sh ] && source /Users/davidpierce/.travis/travis.sh
+[ -f ~/.travis/travis.sh ] && source ~/.travis/travis.sh
 
 # OPAM configuration
-eval `opam config env`
-. ~/.opam/opam-init/init.zsh > /dev/null 2> /dev/null || true
+if _has opam; then
+  eval `opam config env`
+  . ~/.opam/opam-init/init.zsh > /dev/null 2> /dev/null || true
+fi
+
 
 # Android stuff, I guess...
 export ANDROID_HOME=/usr/local/opt/android-sdk

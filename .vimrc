@@ -40,7 +40,6 @@ Plug 'nightsense/seabird'
 " Plug 'jceb/vim-orgmode'
 
 " Language-specific plugins
-Plug 'lukaszkorecki/CoffeeTags'
 Plug 'suan/vim-instant-markdown', { 'for': 'md' }
 Plug 'tpope/vim-markdown', { 'for': 'md' }
 Plug 'mtscout6/vim-cjsx', { 'for': 'coffee' }
