@@ -27,8 +27,17 @@ Plug 'epeli/slimux'
 Plug 'bling/vim-airline'
 Plug 'vim-airline/vim-airline-themes'
 Plug 'mattn/emmet-vim'
-Plug 'tpope/vim-repeat'
 Plug 'sotte/presenting.vim'
+Plug 'autozimu/LanguageClient-neovim', {
+    \ 'branch': 'next',
+    \ 'do': 'bash install.sh',
+    \ }
+Plug 'Shougo/deoplete.nvim'
+Plug 'roxma/nvim-yarp'
+Plug 'roxma/vim-hug-neovim-rpc'
+Plug 'flowtype/vim-flow'
+" the path to python3 is obtained through executing `:echo exepath('python3')` in vim
+let g:python3_host_prog = "/usr/local/bin/python3"
 
 " Colorschemes and themes
 Plug 'reedes/vim-colors-pencil'
@@ -37,10 +46,20 @@ Plug 'nightsense/seabird'
 
 " Interesting stuff, but not useful right now
 " Plug 'dermusikman/sonicpi.vim'
-" Plug 'jceb/vim-orgmode'
+
+" Orgmode stuff
+" Install exuberant-ctags
+" sudo apt update && sudo apt install exuberant-ctags
+Plug 'chrisbra/NrrwRgn'
+Plug 'jceb/vim-orgmode'
+Plug 'mattn/calendar-vim'
+Plug 'tpope/vim-speeddating'
+Plug 'tpope/vim-repeat'
+Plug 'vim-scripts/SyntaxRange'
 
 " Language-specific plugins
-Plug 'suan/vim-instant-markdown', { 'for': 'md' }
+Plug 'lukaszkorecki/CoffeeTags'
+Plug 'suan/vim-instant-markdown'
 Plug 'tpope/vim-markdown', { 'for': 'md' }
 Plug 'mtscout6/vim-cjsx', { 'for': 'coffee' }
 Plug 'kchmck/vim-coffee-script' " , { 'for': 'coffee' }
@@ -48,10 +67,16 @@ Plug 'mustache/vim-mustache-handlebars' " , { 'for': 'hbs' }
 Plug 'fatih/vim-go', { 'for': 'go' }
 Plug 'groenewege/vim-less', { 'for': 'less' }
 Plug 'jwhitley/vim-literate-coffeescript', { 'for': 'litcoffee' }
-Plug 'let-def/ocp-indent-vim', { 'for': 'ocaml' }
+Plug 'let-def/ocp-indent-vim'
 Plug 'reasonml-editor/vim-reason-plus'
+Plug 'jordwalke/vim-reasonml'
 Plug 'ElmCast/elm-vim', { 'for': 'elm' }
-Plug 'rust-lang/rust.vim', { 'for': 'rust' }
+Plug 'rust-lang/rust.vim' " , { 'for': 'rust' }
+Plug 'flowtype/vim-flow'
+Plug 'guns/vim-sexp'
+Plug 'tpope/vim-fireplace'
+Plug 'liquidz/vim-iced'
+Plug 'elixir-editors/vim-elixir'
 
 " Initialize plugin system
 call plug#end()
@@ -73,6 +98,7 @@ set autoread
 " Fun Leader Tricks: http://sheerun.net/2014/03/21/how-to-boost-your-vim-productivity/
 let mapleader = ","
 let g:mapleader = ","
+let maplocalleader = "\\"
 
 " Repeat.vim settings
 " Example for hooking a new plugin into the repeat system
@@ -211,7 +237,8 @@ set scrolloff=3
 set wildmenu
 set wildmode=list:longest
 set nospell
-set cursorline
+" set cursorline
+set lazyredraw
 
 " In many terminal emulators the mouse works just fine, thus enable it.
 " It turns out having the cursor jump becaus I accidentally touched the
@@ -241,7 +268,7 @@ endif
 
 " Colorschemes
 " solarized
-colorscheme nord
+" colorscheme nord
 " colorscheme seagull
 " colorscheme greygull
 " colorscheme petrel
@@ -252,7 +279,9 @@ colorscheme nord
 " set term=xterm-256color
 " set background=dark
 " colorscheme pencil
-colorschem snow
+set background=light
+"colorscheme fog
+colorscheme snow
 let g:pencil_neutral_headings = 1
 let g:pencil_gutter_color = 1
 let g:pencil_terminal_italics = 1
@@ -275,7 +304,19 @@ set listchars=tab:▸\ ,eol:¬
 au BufNewFile,BufRead *.json set filetype=javascript
 
 " JS / JSX linting
-let g:ale_linters = {'javascript': ['eslint']}
+" 'javascript': ['flow', 'eslint'],
+"let g:ale_linters = {
+"  \ 'javascript': ['flow', 'eslint']
+"  \ }
+let g:ale_linters = {
+  \ 'javascript': ['flow-language-server', 'eslint'],
+  \ 'rust': ['cargo'],
+  \ }
+let g:ale_rust_cargo_use_clippy = executable('cargo-clippy')
+
+" Flow stuff
+let g:flow#autoclose = 1
+let g:flow#showquickfix = 0
 
 " Gemfile highlighting
 au BufNewFile,BufRead Gemfile set filetype=ruby
@@ -309,10 +350,9 @@ endfunction
 let g:airline_powerline_fonts = 1
 " let g:airline_theme='base16'
 " let g:airline_theme='bubblegum'
-let g:airline_solarized_bg='light'
-" let g:airline_theme='papercolor'
-" let g:airline_theme='silver'
-let g:airline_theme='lucius'
+let g:airline_solarized_bg='dark'
+" let g:airline_theme='lucius'
+let g:airline_theme='minimalist'
 
 " CoffeeScript settings
 autocmd BufNewFile,BufReadPost *.coffee setl foldmethod=indent nofoldenable
@@ -337,6 +377,8 @@ autocmd BufWritePost *.coffee call LintCoffee()
 " \ }
 
 " vim-orgmode - Find more in :helpgrep orgguide - /org-mappings
+let g:org_heading_shade_leading_stars = 0
+let g:org_agenda_files = ["~/notes/*.org"]
 au FileType org nnoremap <leader>T :OrgCheckBoxToggle<CR>
 au FileType org nnoremap <leader>ic :OrgDateInsertTimestampActiveCmdLine<CR>
 
@@ -373,6 +415,7 @@ let g:go_highlight_structs = 1
 let g:go_highlight_operators = 1
 let g:go_highlight_build_constraints = 1
 
+" au BufWritePost *.go GoMetaLinter
 au BufWritePost *.go GoLint
 
 au FileType go nmap <leader>b <Plug>(go-build)
@@ -415,20 +458,6 @@ nnoremap <Leader>zz :let &scrolloff=999-&scrolloff<CR>
 " Start in 'scroll in center' mode
 set so=999
 
-" OCaml
-let g:opamshare = substitute(system('opam config var share'),'\n$','','''')
-execute "set rtp+=" . g:opamshare . "/merlin/vim"
-
-autocmd FileType ocaml source substitute(system('opam config var share'), '\n$', '', '''') . "/typerex/ocp-indent/ocp-indent.vim"
-
-" Vim needs to be built with Python scripting support, and must be
-" able to find Merlin's executable on PATH.
-if executable('ocamlmerlin') && has('python')
-  let s:ocamlmerlin = substitute(system('opam config var share'), '\n$', '', '''') . "/ocamlmerlin"
-  execute "set rtp+=".s:ocamlmerlin."/vim"
-  execute "set rtp+=".s:ocamlmerlin."/vimbufsync"
-endif
-
 " Nim
 fun! JumpToDef()
   if exists("*GotoDefinition_" . &filetype)
@@ -451,6 +480,9 @@ nnoremap <Leader>cl :SlimuxREPLSendLine<CR>
 vnoremap <buffer> <Leader>vv :SlimuxREPLSendSelection:w<CR>
 " vnoremap <buffer> <Leader>cs :SlimuxREPLSendSelection:w<CR>
 
+" Clojure
+let g:iced_enable_default_key_mappings = v:true
+
 " TODO Move to Rust ftplugin
 " " Rust
 "  https://github.com/rust-lang/rust.vim/issues/130
@@ -460,6 +492,63 @@ let g:syntastic_rust_rustc_fname = ''
 let g:syntastic_rust_rustc_args = '--'
 let g:syntastic_rust_checkers = ['rustc']
 
-let g:ycm_rust_src_path = '~/Development/rust/src/1.20.0/src'
+" let g:ycm_rust_src_path = '~/Development/rust/src/1.20.0/src'
 
-nmap \r :!tmux send-keys -t localdev:0.1 C-l C-p C-j <CR><CR>
+nmap \r :!tmux send-keys -t local-search:0.1 C-l C-p C-j <CR><CR>
+
+function! ExeSql()
+  let g:query = @q
+  if g:query == ""
+    echo "no sql to execute"
+    return 0
+  endif
+
+  call writefile(split(g:query, "\n"), "/tmp/sqltmp")
+
+  if exists("g:sql_run_buffer")
+    set swb=usetab
+    exec ":rightbelow sbuf " . g:sql_run_buffer
+  else
+    bo new
+    set buftype=nofile
+    let g:sql_run_buffer = bufnr("%")
+  endif
+
+  let sqlcmd = "%! cat /tmp/sqltmp | vim-sql 2>&1 | grep -v Warning"
+  exec sqlcmd
+endfunction
+map <Leader>ss "qy:call ExeSql()<CR>
+
+" OCaml
+"let g:opamshare = substitute(system('opam config var share'),'\n$','','''')
+"execute "set rtp+=" . g:opamshare . "/merlin/vim"
+"
+"autocmd FileType ocaml source substitute(system('opam config var share'), '\n$', '', '''') . "/typerex/ocp-indent/ocp-indent.vim"
+
+" Vim needs to be built with Python scripting support, and must be
+" able to find Merlin's executable on PATH.
+"if executable('ocamlmerlin') && has('python')
+"  let s:ocamlmerlin = substitute(system('opam config var share'), '\n$', '', '''') . "/ocamlmerlin"
+"  execute "set rtp+=".s:ocamlmerlin."/vim"
+"  execute "set rtp+=".s:ocamlmerlin."/vimbufsync"
+"endif
+
+" Reason
+set hidden
+" \ 'reason': ['/home/ubuntu/bin/reason-language-server.exe'],
+let g:LanguageClient_serverCommands = {
+  \ 'reason': ['esy', 'ocaml-language-server', '--stdio'],
+  \ 'ocaml': ['/home/ubuntu/bin/reason-language-server.exe']
+  \ }
+
+let g:ycm_semantic_triggers = {
+  \ 'ocaml' : ['.', '#'],
+  \ 'reason' : ['.', '#'],
+  \ }
+
+nnoremap <silent> K :call LanguageClient_textDocument_hover()<CR>
+nnoremap <silent> gd : call LanguageClient_textDocument_definition()<CR>
+nnoremap <silent> <F2> :call LanguageClient_textDocument_rename()<CR>
+nnoremap <silent> gf :call LanguageClient_textDocument_formatting()<cr>
+
+"autocmd! bufwritepost *.re call LanguageClient_textDocument_formatting()

@@ -2,6 +2,8 @@
 export ZSH=~/.oh-my-zsh
 if [ -f '~/.tokens' ]; then source '~/.tokens'; fi
 
+export TZ='America/Los_Angeles'
+
 # Import tokens
 
 _has(){
@@ -12,6 +14,7 @@ _has(){
 # Look in ~/.oh-my-zsh/themes/
 # Optionally, if you set this to "random", it'll load a random theme each
 # time that oh-my-zsh is loaded.
+#ZSH_THEME="fog"
 ZSH_THEME="snow"
 
 # Uncomment the following line to enable command auto-correction.
@@ -29,12 +32,13 @@ DISABLE_UNTRACKED_FILES_DIRTY="true"
 # Custom plugins may be added to ~/.oh-my-zsh/custom/plugins/
 # Example format: plugins=(rails git textmate ruby lighthouse)
 # Add wisely, as too many plugins slow down shell startup.
-plugins=(git git-flow git-flow-completion)
+plugins=(git)
 
 # User configuration
 
 export PATH="/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin"
-export PATH=$PATH:~/bin
+export PATH=~/bin:$PATH
+export PATH="$HOME/.yarn/bin:$HOME/.config/yarn/global/node_modules/.bin:$PATH"
 
 source $ZSH/oh-my-zsh.sh
 
@@ -43,6 +47,7 @@ export LANG=en_US.UTF-8
 
 # Preferred editor for local and remote sessions
 export EDITOR='vim'
+alias vim=/usr/local/bin/vim
 
 # Set personal aliases, overriding those provided by oh-my-zsh libs,
 # plugins, and themes. Aliases can be placed here, though oh-my-zsh
@@ -56,17 +61,16 @@ export EDITOR='vim'
 # Docker aliases
 alias dc="docker-compose"
 alias db="docker build"
+alias dcp="docker-compose -f docker-compose.yml -f docker-compose.prod.yml"
 
 # Activates NVM
 export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
-
-# Default Vagrant VMWare Fusion settings
-export VAGRANT_DEFAULT_PROVIDER=vmware_fusion
+[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
 
 # Turns on SSH Agent for port forwarding
-ssh-add ~/.ssh/id_rsa 1> /dev/null
-ssh-add ~/.ssh/local-eng_rsa 1> /dev/null
+#ssh-add ~/.ssh/id_rsa 1> /dev/null
+#ssh-add ~/.ssh/local-eng_rsa 1> /dev/null
 
 # Vim Mode settings for ZSH
 # http://dougblack.io/words/zsh-vi-mode.html
@@ -79,6 +83,10 @@ function zle-line-init zle-keymap-select {
 }
 zle -N zle-line-init
 zle -N zle-keymap-select
+
+function tmn {
+  tmux new-session -s $(basename $(pwd))
+}
 
 bindkey '^P' up-history
 bindkey '^N' down-history
@@ -93,15 +101,10 @@ bindkey '^w' backward-kill-word
 # ctrl-r starts searching history backward
 bindkey '^r' history-incremental-search-backward
 
-# Add Chef executables to path
-export PATH=$PATH:~/.chefdk/gem/ruby/2.1.0/bin
-
-# OpenStack
-[ -f ~/.openstack.conf ] && source ~/.openstack.conf
-
 # GOLANG
 # export PATH=$PATH:/usr/local/go/bin
-export PATH=~/go-install/go/bin:$PATH
+#export PATH=/usr/local/go/bin:$PATH
+export PATH=/opt/go/bin:$PATH
 export GOPATH=~/Development/go
 export PATH=$PATH:$GOPATH/bin
 
@@ -148,3 +151,22 @@ if _has fzf && _has ag; then
     --color info:108,prompt:109
     '
 fi
+
+export GITHUB_TOKEN=$(cat ~/.local-docker-github.token)
+alias gpa='ls ~/Development/mozlocal/apps | xargs -n1 -I{} bash -c "echo '\''--{}--'\''; cd ~/Development/mozlocal/apps/{}; git co master; git pull"'
+
+function crunch {
+  # https://www.youtube.com/watch?v=jHNBKg9xI6Q
+  sh -c "$(fc -ln -1)"
+}
+
+alias fixssh='eval $(tmux showenv -s SSH_AUTH_SOCK)'
+
+#source ~/.silo-creds.sh
+
+source <(kompose completion zsh)
+
+source $HOME/.cargo/env
+
+export PATH=~/.rbenv/bin:$PATH
+eval "$(rbenv init -)"
