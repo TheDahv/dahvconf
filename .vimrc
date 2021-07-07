@@ -21,7 +21,8 @@ Plug 'terryma/vim-multiple-cursors'
 Plug 'tpope/vim-fugitive'
 Plug 'tpope/vim-rhubarb'
 Plug 'majutsushi/tagbar'
-Plug 'Valloric/YouCompleteMe'
+" Plug 'ycm-core/YouCompleteMe'
+Plug 'neoclide/coc.nvim', {'branch': 'release'}
 Plug 'mileszs/ack.vim'
 Plug 'epeli/slimux'
 Plug 'bling/vim-airline'
@@ -58,18 +59,18 @@ Plug 'tpope/vim-repeat'
 Plug 'vim-scripts/SyntaxRange'
 
 " Language-specific plugins
-Plug 'lukaszkorecki/CoffeeTags'
-Plug 'suan/vim-instant-markdown'
+" Plug 'lukaszkorecki/CoffeeTags'
 Plug 'tpope/vim-markdown', { 'for': 'md' }
-Plug 'mtscout6/vim-cjsx', { 'for': 'coffee' }
-Plug 'kchmck/vim-coffee-script' " , { 'for': 'coffee' }
+" Plug 'mtscout6/vim-cjsx', { 'for': 'coffee' }
+" Plug 'kchmck/vim-coffee-script' " , { 'for': 'coffee' }
 Plug 'mustache/vim-mustache-handlebars' " , { 'for': 'hbs' }
 Plug 'fatih/vim-go', { 'for': 'go' }
 Plug 'groenewege/vim-less', { 'for': 'less' }
-Plug 'jwhitley/vim-literate-coffeescript', { 'for': 'litcoffee' }
+" Plug 'jwhitley/vim-literate-coffeescript', { 'for': 'litcoffee' }
 Plug 'let-def/ocp-indent-vim'
 Plug 'reasonml-editor/vim-reason-plus'
-Plug 'jordwalke/vim-reasonml'
+Plug 'rescript-lang/vim-rescript'
+" Plug 'jordwalke/vim-reasonml'
 Plug 'ElmCast/elm-vim', { 'for': 'elm' }
 Plug 'rust-lang/rust.vim' " , { 'for': 'rust' }
 Plug 'flowtype/vim-flow'
@@ -77,6 +78,10 @@ Plug 'guns/vim-sexp'
 Plug 'tpope/vim-fireplace'
 Plug 'liquidz/vim-iced'
 Plug 'elixir-editors/vim-elixir'
+Plug 'tell-k/vim-autopep8'
+Plug 'leafgarland/typescript-vim'
+Plug 'ianks/vim-tsx'
+Plug 'dart-lang/dart-vim-plugin'
 
 " Initialize plugin system
 call plug#end()
@@ -90,6 +95,9 @@ endif
 filetype on
 filetype plugin on
 filetype indent on
+
+" Use json sytax for jsonc
+autocmd FileType json syntax match Comment +\/\/.\+$+
 
 " Set to autoread when a file is modified from the outside
 set autoread
@@ -120,7 +128,7 @@ let maplocalleader = "\\"
 
 " FZF
 nmap ; :Buffers<CR>
-nmap <Leader>f :Files<CR>
+nmap <Leader>f :GFiles<CR>
 nmap <Leader>r :Tags<CR>
 
 " RIP AG.vim
@@ -220,6 +228,8 @@ set si " Smart indent
 set wrap " Wrap lines
 set tw=80
 
+autocmd FileType go setlocal noexpandtab shiftwidth& tabstop& softtabstop& smarttab&
+
 set foldmethod=indent
 set foldlevel=100
 
@@ -239,6 +249,117 @@ set wildmode=list:longest
 set nospell
 " set cursorline
 set lazyredraw
+set cmdheight=2
+
+" Autosuggestion config
+set updatetime=300
+" Don't pass messages to |ins-completion-menu}
+set shortmess+=c
+" Always show the signcolumn, otherwise it would shift the text each time
+" diagnostics appear/become resolved.
+if has("patch-8.1.1564")
+  " Recently vim can merge signcolumn and number column into one
+  set signcolumn=number
+else
+  set signcolumn=yes
+endif
+
+
+" Use tab for trigger completion with characters ahead and navigate.
+" NOTE: Use command ':verbose imap <tab>' to make sure tab is not mapped by
+" other plugin before putting this into your config.
+inoremap <silent><expr> <TAB>
+      \ pumvisible() ? "\<C-n>" :
+      \ <SID>check_back_space() ? "\<TAB>" :
+      \ coc#refresh()
+inoremap <expr><S-TAB> pumvisible() ? "\<C-p>" : "\<C-h>"
+
+
+function! s:check_back_space() abort
+  let col = col('.') - 1
+  return !col || getline('.')[col - 1]  =~# '\s'
+endfunction
+
+
+" Use <c-space> to trigger completion.
+if has('nvim')
+  inoremap <silent><expr> <c-space> coc#refresh()
+else
+  inoremap <silent><expr> <c-@> coc#refresh()
+endif
+
+" Use <cr> to confirm completion, `<C-g>u` means break undo chain at current
+" position. Coc only does snippet and additional edit on confirm.
+" <cr> could be remapped by other vim plugin, try `:verbose imap <CR>`.
+if exists('*complete_info')
+  inoremap <expr> <cr> complete_info()["selected"] != "-1" ? "\<C-y>" : "\<C-g>u\<CR>"
+else
+  inoremap <expr> <cr> pumvisible() ? "\<C-y>" : "\<C-g>u\<CR>"
+endif
+
+" Use `[g` and `]g` to navigate diagnostics
+" Use `:CocDiagnostics` to get all diagnostics of current buffer in location list.
+nmap <silent> [g <Plug>(coc-diagnostic-prev)
+nmap <silent> ]g <Plug>(coc-diagnostic-next)
+
+" GoTo code navigation.
+nmap <silent> gd <Plug>(coc-definition)
+nmap <silent> gy <Plug>(coc-type-definition)
+nmap <silent> gi <Plug>(coc-implementation)
+nmap <silent> gr <Plug>(coc-references)
+
+" Use K to show documentation in preview window.
+nnoremap <silent> K :call <SID>show_documentation()<CR>
+
+function! s:show_documentation()
+  if (index(['vim','help'], &filetype) >= 0)
+    execute 'h '.expand('<cword>')
+  else
+    call CocAction('doHover')
+  endif
+endfunction
+
+" Highlight the symbol and its references when holding the cursor.
+autocmd CursorHold * silent call CocActionAsync('highlight')
+
+" Symbol renaming.
+nmap <leader>rn <Plug>(coc-rename)
+
+
+" Formatting selected code.
+xmap <leader>F  <Plug>(coc-format-selected)
+nmap <leader>F  <Plug>(coc-format-selected)
+
+augroup mygroup
+  autocmd!
+  " Setup formatexpr specified filetype(s).
+  autocmd FileType typescript,json setl formatexpr=CocAction('formatSelected')
+  " Update signature help on jump placeholder.
+  autocmd User CocJumpPlaceholder call CocActionAsync('showSignatureHelp')
+augroup end
+
+" Add (Neo)Vim's native statusline support.
+" NOTE: Please see `:h coc-status` for integrations with external plugins that
+" provide custom statusline: lightline.vim, vim-airline.
+set statusline^=%{coc#status()}%{get(b:,'coc_current_function','')}
+
+" Mappings for CoCList
+" Show all diagnostics.
+nnoremap <silent><nowait> <space>a  :<C-u>CocList diagnostics<cr>
+" Manage extensions.
+nnoremap <silent><nowait> <space>e  :<C-u>CocList extensions<cr>
+" Show commands.
+nnoremap <silent><nowait> <space>c  :<C-u>CocList commands<cr>
+" Find symbol of current document.
+nnoremap <silent><nowait> <space>o  :<C-u>CocList outline<cr>
+" Search workspace symbols.
+nnoremap <silent><nowait> <space>s  :<C-u>CocList -I symbols<cr>
+" Do default action for next item.
+nnoremap <silent><nowait> <space>j  :<C-u>CocNext<CR>
+" Do default action for previous item.
+nnoremap <silent><nowait> <space>k  :<C-u>CocPrev<CR>
+" Resume latest coc list.
+nnoremap <silent><nowait> <space>p  :<C-u>CocListResume<CR>
 
 " In many terminal emulators the mouse works just fine, thus enable it.
 " It turns out having the cursor jump becaus I accidentally touched the
@@ -308,10 +429,19 @@ au BufNewFile,BufRead *.json set filetype=javascript
 "let g:ale_linters = {
 "  \ 'javascript': ['flow', 'eslint']
 "  \ }
+" let g:ale_javascript_prettier_use_local_config = 1
+"let g:ale_fixers = {
+"  \ 'typescript': ['prettier-standard'],
+"  \ 'tsx': ['prettier-standard'],
+"  \ }
+" \ 'javascript': ['flow-language-server', 'eslint'],
 let g:ale_linters = {
-  \ 'javascript': ['flow-language-server', 'eslint'],
+  \ 'javascript': ['eslint'],
   \ 'rust': ['cargo'],
   \ }
+" let g:ale_linter_aliases = {'typescriptreact': 'typescript'}
+let g:ale_fix_on_save = 1
+let g:ale_completion_tsserver_autoimport = 1
 let g:ale_rust_cargo_use_clippy = executable('cargo-clippy')
 
 " Flow stuff
@@ -355,15 +485,15 @@ let g:airline_solarized_bg='dark'
 let g:airline_theme='minimalist'
 
 " CoffeeScript settings
-autocmd BufNewFile,BufReadPost *.coffee setl foldmethod=indent nofoldenable
-autocmd FileType litcoffee runtime ftplugin/coffee.vim
-let coffee_lint_options = '-f ~/.coffeelint.json'
+"autocmd BufNewFile,BufReadPost *.coffee setl foldmethod=indent nofoldenable
+"autocmd FileType litcoffee runtime ftplugin/coffee.vim
+"let coffee_lint_options = '-f ~/.coffeelint.json'
 
-function! LintCoffee()
-  :CoffeeLint! | cwindow
-endfunction
+"function! LintCoffee()
+"  :CoffeeLint! | cwindow
+"endfunction
 
-autocmd BufWritePost *.coffee call LintCoffee()
+"autocmd BufWritePost *.coffee call LintCoffee()
 
 " let g:tagbar_type_coffee = {
 "     \ 'ctagstype' : 'coffee',
@@ -403,7 +533,7 @@ au FileType org nnoremap <leader>agw :OrgAgendaWeek<CR>
 " https://github.com/suan/vim-instant-markdown
 let g:instant_markdown_autostart = 1
 nnoremap <leader>p :InstantMarkdownPreview<CR>
-let g:markdown_fenced_languages = ['html', 'coffee', 'bash=sh']
+let g:markdown_fenced_languages = ['html', 'bash=sh']
 
 " Go settings
 let g:go_fmt_command = "goimports"
@@ -487,14 +617,14 @@ let g:iced_enable_default_key_mappings = v:true
 " " Rust
 "  https://github.com/rust-lang/rust.vim/issues/130
 let g:rustfmt_autosave = 1
-let g:syntastic_rust_rustc_exe = 'cargo check'
-let g:syntastic_rust_rustc_fname = ''
-let g:syntastic_rust_rustc_args = '--'
-let g:syntastic_rust_checkers = ['rustc']
+" let g:syntastic_rust_rustc_exe = 'cargo check'
+" let g:syntastic_rust_rustc_fname = ''
+" let g:syntastic_rust_rustc_args = '--'
+" let g:syntastic_rust_checkers = ['rustc']
 
 " let g:ycm_rust_src_path = '~/Development/rust/src/1.20.0/src'
 
-nmap \r :!tmux send-keys -t local-search:0.1 C-l C-p C-j <CR><CR>
+nmap \r :!tmux send-keys -t circuit-breaker:0.1 C-l C-p C-j <CR><CR>
 
 function! ExeSql()
   let g:query = @q
@@ -536,19 +666,52 @@ map <Leader>ss "qy:call ExeSql()<CR>
 " Reason
 set hidden
 " \ 'reason': ['/home/ubuntu/bin/reason-language-server.exe'],
+" \ 'reason': ['esy', 'ocaml-language-server', '--stdio'],
 let g:LanguageClient_serverCommands = {
-  \ 'reason': ['esy', 'ocaml-language-server', '--stdio'],
-  \ 'ocaml': ['/home/ubuntu/bin/reason-language-server.exe']
+  \ 'reason': ['/home/david/bin/reason-language-server'],
+  \ 'ocaml': ['/home/ubuntu/bin/reason-language-server.exe'],
+  \ 'typescript': ['tsserver'],
   \ }
 
 let g:ycm_semantic_triggers = {
+  \ 'rust' : ['.', '::'],
   \ 'ocaml' : ['.', '#'],
   \ 'reason' : ['.', '#'],
   \ }
 
-nnoremap <silent> K :call LanguageClient_textDocument_hover()<CR>
+" nnoremap <silent> K :call LanguageClient_textDocument_hover()<CR>
 nnoremap <silent> gd : call LanguageClient_textDocument_definition()<CR>
 nnoremap <silent> <F2> :call LanguageClient_textDocument_rename()<CR>
 nnoremap <silent> gf :call LanguageClient_textDocument_formatting()<cr>
+
+function! FormatPrettier()
+  set autoread
+  execute "silent !" . 'npx prettier-standard' . ' ' . bufname("%")
+endfunction
+au BufWritePost *.tsx :silent! call FormatPrettier() | redraw!
+au BufWritePost *.ts :silent! call FormatPrettier() | redraw!
+nmap <Leader>, :silent! call FormatPrettier() <bar> redraw!<CR>
+
+function! FormatRescript()
+  " Check if the file is valid before formatting
+  execute "silent !" . 'npx bsc ' . bufname("%")
+  if v:shell_error
+    echo 'compilation error'
+    return
+  endif
+
+  " Save cursor position: https://stackoverflow.com/a/7086709
+  let _s=@/
+  let l = line(".")
+  let c = col(".")
+  let @/=_s
+
+  set autoread
+  execute "silent %!" . 'npx bsc -format' . ' ' . bufname("%")
+
+  " Set cursor after redraw
+  call cursor(l, c)
+endfunction
+"au BufWritePost *.res :silent! call FormatRescript() | redraw!
 
 "autocmd! bufwritepost *.re call LanguageClient_textDocument_formatting()
